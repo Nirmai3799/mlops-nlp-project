@@ -87,10 +87,5 @@ To demonstrate production-ready MLOps practices for NLP systems, including:
 
 ---
 
-## 📌 Status
-🚧 In Progress (Day 0 Setup)
-
----
-
 ## 🤝 Contribution
 This is a personal learning project focused on MLOps and NLP system design.# mlops-nlp-project
