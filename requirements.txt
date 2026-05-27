@@ -1,2 +1,8 @@
 datasets
 spacy
+transformers
+mlflow
+accelerate
+evaluate
+rouge-score
+
