@@ -1,13 +1,31 @@
-import mlflow
-import torch
-
+import os
 from datasets import load_dataset
 from transformers import (
     BartForConditionalGeneration,
-    BartTokenizer,
     Trainer,
     TrainingArguments
 )
+
+from src.training.preprocess import get_tokenizer, preprocess_function
+
+
+def get_latest_checkpoint(output_dir):
+    """Return latest checkpoint path if exists, else None"""
+    if not os.path.exists(output_dir):
+        return None
+
+    checkpoints = [
+        os.path.join(output_dir, d)
+        for d in os.listdir(output_dir)
+        if d.startswith("checkpoint")
+    ]
+
+    if len(checkpoints) == 0:
+        return None
+
+    # Sort by step number
+    checkpoints = sorted(checkpoints, key=lambda x: int(x.split("-")[-1]))
+    return checkpoints[-1]
 
 
 def train_model(data_path="data/processed/data_final.json"):
@@ -15,39 +33,34 @@ def train_model(data_path="data/processed/data_final.json"):
     # Load dataset
     dataset = load_dataset("json", data_files=data_path)
 
-    # Load tokenizer + model
-    tokenizer = BartTokenizer.from_pretrained("facebook/bart-base")
-    model = BartForConditionalGeneration.from_pretrained("facebook/bart-base")
+    # Tokenizer & model
+    tokenizer = get_tokenizer()
 
-    def preprocess(example):
-        inputs = tokenizer(
-            example["input_text"],
-            max_length=512,
-            truncation=True,
-            padding="max_length"
-        )
+    output_dir = "models/bart"
 
-        targets = tokenizer(
-            example["target_summary"],
-            max_length=128,
-            truncation=True,
-            padding="max_length"
-        )
+    # 🔥 Check for checkpoint
+    checkpoint = get_latest_checkpoint(output_dir)
 
-        inputs["labels"] = targets["input_ids"]
-        return inputs
+    if checkpoint:
+        print(f"✅ Loading from checkpoint: {checkpoint}")
+        model = BartForConditionalGeneration.from_pretrained(checkpoint)
+    else:
+        print("🚀 No checkpoint found. Training from scratch.")
+        model = BartForConditionalGeneration.from_pretrained("facebook/bart-base")
 
+    # Preprocess
+    preprocess = preprocess_function(tokenizer)
     tokenized = dataset["train"].map(preprocess, batched=True)
 
-    # Training config
+    # Training args
     training_args = TrainingArguments(
-        output_dir="models/bart",
+        output_dir=output_dir,
         per_device_train_batch_size=2,
         num_train_epochs=1,
         logging_steps=10,
         save_steps=50,
         save_total_limit=2,
-        report_to="none"
+        report_to="mlflow"
     )
 
     # Trainer
@@ -57,19 +70,4 @@ def train_model(data_path="data/processed/data_final.json"):
         train_dataset=tokenized
     )
 
-    return trainer
-
-trainer = train_model()
-
-mlflow.set_tracking_uri("http://127.0.0.1:5000")
-
-with mlflow.start_run(run_name="bart-training"):
-
-    trainer.train()
-
-    mlflow.log_param("model", "bart-base")
-    mlflow.log_param("epochs", 1)
-
-    mlflow.log_metric("dummy_metric", 1)
-
-    print("✅ Training completed!")
+    return trainer, tokenizer, dataset, checkpoint
