@@ -57,7 +57,13 @@ def train_model(data_path="data/processed/data_final.json"):
         train_dataset=tokenized
     )
 
-with mlflow.start_run():
+    return trainer
+
+trainer = train_model()
+
+mlflow.set_tracking_uri("http://127.0.0.1:5000")
+
+with mlflow.start_run(run_name="bart-training"):
 
     trainer.train()
 
