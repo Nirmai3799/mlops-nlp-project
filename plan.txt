@@ -1,0 +1,9 @@
+| Day | Focus | Tasks |
+| --- | --- | --- |
+| **Day 1** | Data Ingestion | Collect PDFs/texts, convert to plain text (PyPDF2/pdfminer), clean and chunk documents. |
+| **Day 2** | Preprocessing | Tokenization, stopword removal, sentence segmentation (spaCy/NLTK). Prepare training/eval datasets. |
+| **Day 3** | Summarization Model | Fine‑tune BART/T5 locally. Log experiments in MLflow. Evaluate with ROUGE/BLEU. |
+| **Day 4** | Embeddings + Search | Generate embeddings with Sentence‑BERT. Build FAISS index. Test semantic search queries. |
+| **Day 5** | CI/CD Pipeline | Set up Jenkins/GitLab CI: linting, unit tests, retraining, embedding rebuild, Docker packaging. |
+| **Day 6** | Deployment | Build FastAPI service with ``/summarize`` and ``/search``. Deploy Docker containers to local Kubernetes (kind/minikube). |
+| **Day 7** | Monitoring + Automation | Integrate Prometheus + Grafana for latency/throughput. Automate setup with Ansible playbooks. |
