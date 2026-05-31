@@ -22,6 +22,7 @@ def run():
         mlflow.log_param("model", "facebook/bart-base")
         mlflow.log_param("epochs", 1)
         mlflow.log_param("batch_size", 2)
+        mlflow.log_param("learning_rate", 5e-5)
 
         # Train
         trainer.train()
@@ -31,6 +32,15 @@ def run():
 
         for k, v in results.items():
             mlflow.log_metric(k, v)
+        # # Log evaluation metrics
+        # mlflow.log_metric("eval_loss", results["eval_loss"], step=1)
+        # mlflow.log_metric("eval_accuracy", results["eval_accuracy"], step=1)
+        # mlflow.log_metric("eval_f1", results["eval_f1"], step=1)
+
+        # # If you compute ROUGE scores
+        # rouge_scores = rouge.compute(predictions=preds, references=refs)
+        # mlflow.log_metric("rouge1_f1", rouge_scores["rouge1"].mid.fmeasure, step=1)
+        # mlflow.log_metric("rougeL_f1", rouge_scores["rougeL"].mid.fmeasure, step=1)
 
         # Save final model
         trainer.save_model("models/bart-final")
